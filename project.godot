@@ -22,7 +22,6 @@ config/icon="res://Arts/icon.png"
 [debug]
 
 settings/fps/force_fps=100
-settings/stdout/print_fps=true
 
 [input]
 

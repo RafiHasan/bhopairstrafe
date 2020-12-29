@@ -5,28 +5,19 @@ public class KinematicPlayer : KinematicBody
 {
 
 	
-
-	public Transform playerView;     
-	public float playerViewYOffset = 0.6f; 
-	public float xMouseSensitivity = 30.0f;
-	public float yMouseSensitivity = 30.0f;
-
-	//GODOT DECLARATIONS
-
 	//MOVEMENT VARIABLES
 	[Export]public float moveSpeed = 10.0f;
-	public float runAcceleration = 14.0f;
-	public float runDeacceleration = 10.0f;
-	public float airAcceleration = 14.0f;
-	public float airDecceleration = 10.0f;
+	[Export]public float runAcceleration = 14.0f;
+	[Export]public float runDeacceleration = 10.0f;
+	[Export]public float airAcceleration = 14.0f;
+	[Export]public float airDecceleration = 10.0f;
 	public float airControl = 0.1f;
 	public float sideStrafeAcceleration = 50.0f;
 	public float sideStrafeSpeed = 1.0f;
-	public float jumpSpeed = 8.0f;
+	[Export]public float jumpSpeed = 8.0f;
 
 	//CONSTANTS
-	[Export]public float friction = 5.25f;     //force
-	[Export]public float accelFriction = 0.0f; //limit 1 to 0
+	[Export]public float friction = 5.25f;
 	[Export]public float gravity = 9.8f;
 	//MOUSE
 	float mouseSensitivity = 0.1f;
@@ -35,12 +26,14 @@ public class KinematicPlayer : KinematicBody
 	//KEYBOARD
 	public Vector2 moveDir = Vector2.Zero;
 	//JUMP
-	bool holdJumpToBhop = true;
+	[Export]bool holdJumpToBhop = true;
+	[Export] bool lockLikeCS = true;
 	bool wishJump = false;
 	//PLAYER MOVEMENT
 	public Vector3 playerVelocity = Vector3.Zero;
-	public Vector3 playerlastVelocity = Vector3.Zero;
-	Vector3 moveDirectionNorm = Vector3.Zero;
+	Vector3 playerJumpVelocity = Vector3.Zero;
+	Vector3 jumpForward = Vector3.Zero;
+	Vector3 jumpRight = Vector3.Zero;
 
 
 	public override void _Ready()
@@ -81,7 +74,6 @@ public class KinematicPlayer : KinematicBody
 
 	public override void _Process(float delta)
 	{
-		//Mouse Movement
 		Transform t = Transform;
 		Quat newrot = new Quat(new Vector3(0, rotx, 0)) * t.basis.Quat();
 		t.basis = new Basis(newrot);
@@ -93,13 +85,11 @@ public class KinematicPlayer : KinematicBody
 			if(Input.GetActionStrength("PlayerJump")>0)
 				QueueJump(true);
 		}
-
-		//Player Movement
 		if (IsOnFloor())
 			GroundMove(delta);
-		else 
+		else if(!IsOnFloor() && !IsOnWall() && !IsOnCeiling())
 			AirMove(delta);
-		//GD.Print(playerVelocity.Length());
+		
 	}
 
 	Vector3 upDirection = Vector3.Up;
@@ -107,27 +97,14 @@ public class KinematicPlayer : KinematicBody
 	public override void _PhysicsProcess(float delta)
 	{
 		base._PhysicsProcess(delta);
-		playerlastVelocity = playerVelocity;
-
 		playerVelocity = MoveAndSlide(playerVelocity, upDirection);
-
-
-		if (IsOnFloor())
-		{
-			//upDirection = GetFloorNormal();
-		}
-		else
-		{
-			//upDirection = Vector3.Up;
-		}
-
 	}
 
 	private void SetMovementDir()
 	{
 		moveDir.y = Input.GetActionStrength("PlayerDown") - Input.GetActionStrength("PlayerUp");
 		moveDir.x = Input.GetActionStrength("PlayerRight") - Input.GetActionStrength("PlayerLeft");
-		moveDir.x *= 0.5f;
+		
 	}
 
 	private void QueueJump(bool pressed)
@@ -147,21 +124,16 @@ public class KinematicPlayer : KinematicBody
 	private void AirMove(float delta)
 	{
 		Vector3 wishdir;
-		float wishvel = airAcceleration;
 		float accel;
 
 		SetMovementDir();
-		ApplyFriction(0.025f, delta);
-		wishdir = GlobalTransform.basis.z* moveDir.y + GlobalTransform.basis.x * moveDir.x;
-		//wishdir = transform.TransformDirection(wishdir);
+		//ApplyFriction(0.025f, delta);
+
+		wishdir = CalculateAirWishDirection(playerJumpVelocity,jumpForward,jumpRight,moveDir);
 
 		float wishspeed = wishdir.Length();
 		wishspeed *= moveSpeed;
 
-		wishdir=wishdir.Normalized();
-		moveDirectionNorm = wishdir;
-
-		// CPM: Aircontrol
 		float wishspeed2 = wishspeed;
 		if (playerVelocity.Dot(wishdir) < 0)
 			accel = airDecceleration;
@@ -188,14 +160,10 @@ public class KinematicPlayer : KinematicBody
 		float speed;
 		float dot;
 		float k;
-
-		
-		// Can't control movement if not moving forward or backward
 		if (Mathf.Abs(moveDir.y) < 0.001 || Mathf.Abs(wishspeed) < 0.001)
 			return;
 		zspeed = playerVelocity.y;
 		playerVelocity.y = 0;
-		/* Next two lines are equivalent to idTech's VectorNormalize() */
 		speed = playerVelocity.Length();
 		playerVelocity=playerVelocity.Normalized();
 
@@ -209,7 +177,6 @@ public class KinematicPlayer : KinematicBody
 			playerVelocity.z = playerVelocity.z * speed + wishdir.z * k;
 
 			playerVelocity = playerVelocity.Normalized();
-			moveDirectionNorm = playerVelocity;
 		}
 
 		playerVelocity.x *= speed;
@@ -221,18 +188,17 @@ public class KinematicPlayer : KinematicBody
 	{
 		Vector3 wishdir;
 
-		if (!wishJump && moveDir.Length()>0)
+		//if (!wishJump && moveDir.Length()>0)
 			ApplyFriction(1.0f, delta);
-		else if(!wishJump)
-			ApplyFriction(0.01f, delta);
-		else
-			ApplyFriction(0, delta);
+		//else if(!wishJump)
+		//	ApplyFriction(0.01f, delta);
+		//else
+		//	ApplyFriction(0, delta);
 
 		SetMovementDir();
 
 		wishdir = GlobalTransform.basis.z * moveDir.y + GlobalTransform.basis.x * moveDir.x;
 		wishdir =wishdir.Normalized();
-		moveDirectionNorm = wishdir;
 
 		var wishspeed = wishdir.Length();
 		wishspeed *= moveSpeed;
@@ -243,6 +209,10 @@ public class KinematicPlayer : KinematicBody
 
 		if (wishJump)
 		{
+			jumpForward = GlobalTransform.basis.z.Normalized();
+			jumpRight = GlobalTransform.basis.x.Normalized();
+			playerJumpVelocity = GLobalTOLocal(playerVelocity, jumpForward,jumpRight);
+
 			playerVelocity.y = jumpSpeed;
 			wishJump = false;
 		}
@@ -257,9 +227,6 @@ public class KinematicPlayer : KinematicBody
 
 		vec.y = 0.0f;
 		speed = vec.Length();
-		drop = 0.0f;
-
-		/* Only if the player is on the ground then apply friction */
 		//if (IsOnFloor())
 		{
 			control = speed < runDeacceleration ? runDeacceleration : speed;
@@ -272,8 +239,7 @@ public class KinematicPlayer : KinematicBody
 		if (speed > 0)
 			newspeed /= speed;
 
-		playerVelocity.x *= newspeed;
-		playerVelocity.z *= newspeed;
+		playerVelocity *= newspeed;
 	}
 
 	private void Accelerate(Vector3 wishdir, float wishspeed, float accel,float delta)
@@ -290,8 +256,69 @@ public class KinematicPlayer : KinematicBody
 		if (accelspeed > addspeed)
 			accelspeed = addspeed;
 
-		playerVelocity.x += accelspeed * wishdir.x;
-		playerVelocity.z += accelspeed * wishdir.z;
+		playerVelocity += accelspeed * wishdir;
 	}
 
+	Vector3 GLobalTOLocal(Vector3 vec,Vector3 forward,Vector3 right)
+	{
+		Vector3 newVector = Vector3.Zero;
+		newVector.z = vec.Dot(forward);
+		newVector.x = vec.Dot(right);
+		newVector.y = 0;
+
+		return newVector;
+	}
+
+	Vector3 LocalToGlobal(Vector3 vec, Vector3 forward, Vector3 right)
+	{
+		Vector3 newVector = Vector3.Zero;
+		newVector = forward * vec.z + right * vec.x;
+		return newVector;
+	}
+
+
+	Vector3 CalculateAirWishDirection(Vector3 vec, Vector3 forward, Vector3 right,Vector2 movement)
+	{
+		Vector3 wish;
+
+		float forcoef = 0;
+		float rightcoef = 0;
+		Vector3 tempVect = LocalToGlobal(vec, jumpForward, jumpRight);
+		tempVect = GLobalTOLocal(tempVect, GlobalTransform.basis.z, GlobalTransform.basis.x);
+
+		if (tempVect.x < 0)
+			rightcoef = -tempVect.x;
+		else
+			rightcoef = tempVect.x;
+
+		if (tempVect.z < 0)
+			forcoef = -tempVect.z;
+		else
+			forcoef = tempVect.z;
+
+		wish = jumpForward * forcoef * movement.y + jumpRight * rightcoef * movement.x;
+		wish = wish.Normalized();
+
+		Vector3 b = GlobalTransform.basis.z;
+		Vector3 a = jumpForward;
+
+		float dot = a.x * -b.z + a.z * b.x;
+
+		if (dot < 0 && moveDir.x > 0)
+		{
+			jumpForward = GlobalTransform.basis.z;
+			jumpRight = GlobalTransform.basis.x;
+		}
+		else if (dot > 0 && moveDir.x < 0)
+		{
+			jumpForward = GlobalTransform.basis.z;
+			jumpRight = GlobalTransform.basis.x;
+		}
+		else if(lockLikeCS)
+		{
+			wish = Vector3.Zero;
+		}
+
+		return wish;
+	}
 }

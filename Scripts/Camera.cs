@@ -5,7 +5,7 @@ public class Camera : Spatial
 {
 	[Export] public NodePath path;
 	KinematicPlayer player;
-	float aaa=0;
+	float angle=0;
 	public override void _Ready()
 	{
 		player = GetNode<KinematicPlayer>(path);
@@ -14,15 +14,15 @@ public class Camera : Spatial
 
 	public override void _Process(float delta)
 	{
-		aaa += player.roty;
+		angle += player.roty;
 		Transform t = Transform;
 		player.roty = 0;
-		if (aaa > 3.1415f/2)
-			aaa = 3.1415f / 2;
-		if (aaa < -3.1415f / 2)
-			aaa = -3.1415f / 2;
+		if (angle > 3.1415f/8)
+			angle = 3.1415f / 8;
+		if (angle < -3.1415f / 4)
+			angle = -3.1415f / 4;
 
-		Quat newrot = new Quat(new Vector3(aaa, 0, 0));
+		Quat newrot = new Quat(new Vector3(angle, 0, 0));
 		t.basis = new Basis(newrot);
 		Transform = t;
 	}

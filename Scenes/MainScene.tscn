@@ -13,15 +13,17 @@ height = 40.0
 
 [node name="Player" parent="." instance=ExtResource( 1 )]
 transform = Transform( -0.0483094, 0, 0.998832, 0, 1, 0, -0.998832, 0, -0.0483094, 271.467, 2.21682, 0.32334 )
-moveSpeed = 10.0
-friction = 8.0
+airDecceleration = 40.0
+friction = 1.0
 gravity = 9.8
+holdJumpToBhop = false
+lockLikeCS = false
 
 [node name="CSGMesh" parent="Player" index="1"]
 material = ExtResource( 2 )
 
 [node name="Camera" type="Camera" parent="Player"]
-transform = Transform( 1, 0, 0, 0, 0.878742, 0.477297, 0, -0.477297, 0.878742, 0.0477564, 4.29802, 5.02233 )
+transform = Transform( 1, 1.86265e-09, -7.45058e-09, 0, 0.878742, 0.477297, 3.72529e-09, -0.477297, 0.878743, -0.422343, 4.29802, 14.7421 )
 fov = 88.4
 far = 773.4
 script = ExtResource( 3 )
