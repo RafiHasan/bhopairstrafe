@@ -12,18 +12,21 @@ height = 40.0
 [node name="MainScene" type="Spatial"]
 
 [node name="Player" parent="." instance=ExtResource( 1 )]
-transform = Transform( -0.0483094, 0, 0.998832, 0, 1, 0, -0.998832, 0, -0.0483094, 271.467, 2.21682, 0.32334 )
-airDecceleration = 40.0
+transform = Transform( -0.0483094, 0, 0.998832, 0, 1, 0, -0.998832, 0, -0.0483094, -85.4159, 22.9515, -98.2473 )
+runAcceleration = 35.0
+runDeacceleration = 25.0
+airAcceleration = 350.0
+airDecceleration = 250.0
+sideStrafeAcceleration = 125.0
 friction = 1.0
-gravity = 9.8
-holdJumpToBhop = false
+gravity = 10.0
 lockLikeCS = false
 
 [node name="CSGMesh" parent="Player" index="1"]
 material = ExtResource( 2 )
 
 [node name="Camera" type="Camera" parent="Player"]
-transform = Transform( 1, 1.86265e-09, -7.45058e-09, 0, 0.878742, 0.477297, 3.72529e-09, -0.477297, 0.878743, -0.422343, 4.29802, 14.7421 )
+transform = Transform( 1, 1.86265e-09, -7.45058e-09, 0, 0.878742, 0.477297, 7.45058e-09, -0.477297, 0.878743, -0.00764465, 3.01384, 6.16779 )
 fov = 88.4
 far = 773.4
 script = ExtResource( 3 )
@@ -116,6 +119,12 @@ mesh = SubResource( 1 )
 
 [node name="CSGPolygon2" type="CSGPolygon" parent="CSGCombiner"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -84.306, 2.08694, 170.383 )
+polygon = PoolVector2Array( -72.5709, -1.63165, -6.22685, 17.855, 25.4734, 24.7575, 25.5543, -0.776146 )
+depth = 25.005
+material = ExtResource( 4 )
+
+[node name="CSGPolygon3" type="CSGPolygon" parent="CSGCombiner"]
+transform = Transform( 0.660657, 0, -0.750688, 0, 1, 0, 0.750688, 0, 0.660657, -84.306, 2.08694, 115.595 )
 polygon = PoolVector2Array( -72.5709, -1.63165, -6.22685, 17.855, 25.4734, 24.7575, 25.5543, -0.776146 )
 depth = 25.005
 material = ExtResource( 4 )
