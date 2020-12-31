@@ -12,8 +12,8 @@ public class KinematicPlayer : KinematicBody
 	[Export]public float airAcceleration = 14.0f;
 	[Export]public float airDecceleration = 10.0f;
 	public float airControl = 0.1f;
-	public float sideStrafeAcceleration = 50.0f;
-	public float sideStrafeSpeed = 1.0f;
+	[Export]public float sideStrafeAcceleration = 50.0f;
+	[Export]public float sideStrafeSpeed = 1.0f;
 	[Export]public float jumpSpeed = 8.0f;
 
 	//CONSTANTS
@@ -85,9 +85,9 @@ public class KinematicPlayer : KinematicBody
 			if(Input.GetActionStrength("PlayerJump")>0)
 				QueueJump(true);
 		}
-		if (IsOnFloor())
+		if (IsOnFloor()||IsOnWall())
 			GroundMove(delta);
-		else if(!IsOnFloor() && !IsOnWall() && !IsOnCeiling())
+		else 
 			AirMove(delta);
 		
 	}
@@ -126,8 +126,12 @@ public class KinematicPlayer : KinematicBody
 		Vector3 wishdir;
 		float accel;
 
+		//GD.Print("Onair");
+		if(playerVelocity.Length()>5*moveSpeed)
+			ApplyFriction(0.5f, delta);
+		else if(playerVelocity.Length() >moveSpeed)
+			ApplyFriction(0.25f, delta);
 		SetMovementDir();
-		//ApplyFriction(0.025f, delta);
 
 		wishdir = CalculateAirWishDirection(playerJumpVelocity,jumpForward,jumpRight,moveDir);
 
@@ -151,7 +155,7 @@ public class KinematicPlayer : KinematicBody
 		if (airControl > 0)
 			AirControl(wishdir, wishspeed2, delta);
 
-		playerVelocity.y-= gravity * delta;
+		playerVelocity.y += -gravity * delta;
 	}
 
 	private void AirControl(Vector3 wishdir, float wishspeed,float delta)
@@ -187,13 +191,26 @@ public class KinematicPlayer : KinematicBody
 	private void GroundMove(float delta)
 	{
 		Vector3 wishdir;
+		//GD.Print("Onground");
+		float fric;
 
-		//if (!wishJump && moveDir.Length()>0)
-			ApplyFriction(1.0f, delta);
-		//else if(!wishJump)
-		//	ApplyFriction(0.01f, delta);
-		//else
-		//	ApplyFriction(0, delta);
+		Vector3 a = GetFloorNormal();
+		Vector3 b = Vector3.Up;
+		if (Math.Acos(a.Dot(b)) * 180 / 3.1415f < 5 || Math.Acos(a.Dot(b)) * 180 / 3.1415f >= 90)
+		{
+			fric = 1.0f;
+			GD.Print(fric);
+		}
+		else
+        {
+			fric = 1.0f*(float)Math.Acos(a.Dot(b)) * 180 / 3.1415f/90;
+			GD.Print(fric);
+		}
+
+		if (moveDir.Length() == 0)
+			fric /= 5;
+
+		ApplyFriction(fric, delta);
 
 		SetMovementDir();
 
@@ -205,9 +222,11 @@ public class KinematicPlayer : KinematicBody
 
 		Accelerate(wishdir, wishspeed, runAcceleration,delta);
 
-		playerVelocity.y = -gravity * delta;
+		playerVelocity.y += -gravity * delta;
 
-		if (wishJump)
+		
+
+		if (wishJump && IsOnFloor())
 		{
 			jumpForward = GlobalTransform.basis.z.Normalized();
 			jumpRight = GlobalTransform.basis.x.Normalized();
@@ -239,7 +258,10 @@ public class KinematicPlayer : KinematicBody
 		if (speed > 0)
 			newspeed /= speed;
 
-		playerVelocity *= newspeed;
+		playerVelocity.x *= newspeed;
+		playerVelocity.z *= newspeed;
+		
+		
 	}
 
 	private void Accelerate(Vector3 wishdir, float wishspeed, float accel,float delta)
@@ -252,7 +274,7 @@ public class KinematicPlayer : KinematicBody
 		addspeed = wishspeed - currentspeed;
 		if (addspeed <= 0)
 			return;
-		accelspeed = accel * delta * wishspeed;
+		accelspeed = accel * delta ;
 		if (accelspeed > addspeed)
 			accelspeed = addspeed;
 
