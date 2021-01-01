@@ -18,6 +18,7 @@ public class KinematicPlayer : KinematicBody
 
 	//CONSTANTS
 	[Export]public float friction = 5.25f;
+	[Export] public float airfriction = 5.25f;
 	[Export]public float gravity = 9.8f;
 	//MOUSE
 	float mouseSensitivity = 0.1f;
@@ -126,11 +127,8 @@ public class KinematicPlayer : KinematicBody
 		Vector3 wishdir;
 		float accel;
 
-		//GD.Print("Onair");
-		if(playerVelocity.Length()>5*moveSpeed)
-			ApplyFriction(0.5f, delta);
-		else if(playerVelocity.Length() >moveSpeed)
-			ApplyFriction(0.25f, delta);
+		ApplyFriction(airfriction, delta);
+		
 		SetMovementDir();
 
 		wishdir = CalculateAirWishDirection(playerJumpVelocity,jumpForward,jumpRight,moveDir);
@@ -144,7 +142,7 @@ public class KinematicPlayer : KinematicBody
 		else
 			accel = airAcceleration;
 		
-		if (moveDir.x == 0 && moveDir.y != 0)
+		if (moveDir.y == 0 && moveDir.x != 0)
 		{
 			if (wishspeed > sideStrafeSpeed)
 				wishspeed = sideStrafeSpeed;
@@ -152,8 +150,8 @@ public class KinematicPlayer : KinematicBody
 		}
 
 		Accelerate(wishdir, wishspeed, accel,delta);
-		if (airControl > 0)
-			AirControl(wishdir, wishspeed2, delta);
+		//if (airControl > 0)
+		//	AirControl(wishdir, wishspeed2, delta);
 
 		playerVelocity.y += -gravity * delta;
 	}
@@ -190,8 +188,22 @@ public class KinematicPlayer : KinematicBody
 
 	private void GroundMove(float delta)
 	{
+
+		if (wishJump && IsOnFloor())
+		{
+			jumpForward = GlobalTransform.basis.z.Normalized();
+			jumpRight = GlobalTransform.basis.x.Normalized();
+			playerJumpVelocity = GLobalTOLocal(playerVelocity, jumpForward, jumpRight);
+
+			playerVelocity.y = jumpSpeed;
+			wishJump = false;
+			return;
+		}
+
+
+
 		Vector3 wishdir;
-		//GD.Print("Onground");
+		SetMovementDir();
 		float fric;
 
 		Vector3 a = GetFloorNormal();
@@ -199,12 +211,10 @@ public class KinematicPlayer : KinematicBody
 		if (Math.Acos(a.Dot(b)) * 180 / 3.1415f < 5 || Math.Acos(a.Dot(b)) * 180 / 3.1415f >= 90)
 		{
 			fric = 1.0f;
-			GD.Print(fric);
 		}
 		else
         {
 			fric = 1.0f*(float)Math.Acos(a.Dot(b)) * 180 / 3.1415f/90;
-			GD.Print(fric);
 		}
 
 		if (moveDir.Length() == 0)
@@ -212,7 +222,7 @@ public class KinematicPlayer : KinematicBody
 
 		ApplyFriction(fric, delta);
 
-		SetMovementDir();
+		
 
 		wishdir = GlobalTransform.basis.z * moveDir.y + GlobalTransform.basis.x * moveDir.x;
 		wishdir =wishdir.Normalized();
@@ -226,15 +236,7 @@ public class KinematicPlayer : KinematicBody
 
 		
 
-		if (wishJump && IsOnFloor())
-		{
-			jumpForward = GlobalTransform.basis.z.Normalized();
-			jumpRight = GlobalTransform.basis.x.Normalized();
-			playerJumpVelocity = GLobalTOLocal(playerVelocity, jumpForward,jumpRight);
-
-			playerVelocity.y = jumpSpeed;
-			wishJump = false;
-		}
+		
 	}
 	private void ApplyFriction(float t,float delta)
 	{
@@ -326,14 +328,14 @@ public class KinematicPlayer : KinematicBody
 
 		float dot = a.x * -b.z + a.z * b.x;
 
-		if (dot < 0 && moveDir.x > 0)
+		if (dot > 0 && moveDir.x != 0)
 		{
 			jumpForward = GlobalTransform.basis.z;
 			jumpRight = GlobalTransform.basis.x;
 		}
-		else if (dot > 0 && moveDir.x < 0)
+		else if (dot < 0 && moveDir.x != 0)
 		{
-			jumpForward = GlobalTransform.basis.z;
+			jumpForward = -GlobalTransform.basis.z;
 			jumpRight = GlobalTransform.basis.x;
 		}
 		else if(lockLikeCS)

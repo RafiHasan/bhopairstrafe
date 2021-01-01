@@ -15,12 +15,14 @@ height = 40.0
 transform = Transform( -0.0483094, 0, 0.998832, 0, 1, 0, -0.998832, 0, -0.0483094, -85.4159, 22.9515, -98.2473 )
 runAcceleration = 35.0
 runDeacceleration = 25.0
-airAcceleration = 350.0
-airDecceleration = 250.0
+airAcceleration = 10.0
+airDecceleration = 10.0
 sideStrafeAcceleration = 125.0
+sideStrafeSpeed = 1.0
+jumpSpeed = 8.0
 friction = 1.0
+airfriction = 0.0
 gravity = 10.0
-lockLikeCS = false
 
 [node name="CSGMesh" parent="Player" index="1"]
 material = ExtResource( 2 )
