@@ -354,8 +354,11 @@ public class KinematicPlayer : KinematicBody
 
 		float dot = a.x * -b.z + a.z * b.x;
 
+<<<<<<< HEAD
 		Vector3 lastforward = jumpForward;
 
+=======
+>>>>>>> 0b96ef0b6cea616290960ce9c6e340a1fe9bbfac
 		if (dot > 0 && moveDir.x != 0)
 		{
 			jumpForward = GlobalTransform.basis.z;
