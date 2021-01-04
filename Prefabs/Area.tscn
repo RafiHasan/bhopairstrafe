@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://Scripts/ForceSpeed.cs" type="Script" id=1]
+
+[sub_resource type="BoxShape" id=1]
+extents = Vector3( 7.53679, 1.44126, 11.4375 )
+
+[sub_resource type="SpatialMaterial" id=2]
+albedo_color = Color( 1, 1, 1, 0 )
+metallic_specular = 0.0
+roughness = 0.0
+
+[sub_resource type="CubeMesh" id=3]
+material = SubResource( 2 )
+size = Vector3( 15, 0.5, 23 )
+
+[node name="Area" type="Area"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -117.857, 12.683, 58.1599 )
+script = ExtResource( 1 )
+useMultiplier = true
+fixedofmultiplyvelocity = 5.0
+duration = 10.0
+
+[node name="CollisionShape" type="CollisionShape" parent="."]
+shape = SubResource( 1 )
+
+[node name="CSGMesh" type="CSGMesh" parent="."]
+mesh = SubResource( 3 )
+[connection signal="body_entered" from="." to="." method="OnEnter"]

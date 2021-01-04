@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://Prefabs/Player.tscn" type="PackedScene" id=1]
 [ext_resource path="res://Scenes/playermat.tres" type="Material" id=2]
 [ext_resource path="res://Scripts/Camera.cs" type="Script" id=3]
 [ext_resource path="res://Scenes/gridtriplaner.tres" type="Material" id=4]
+[ext_resource path="res://Prefabs/Area.tscn" type="PackedScene" id=5]
 
 [sub_resource type="SphereMesh" id=1]
 radius = 20.0
@@ -13,14 +14,15 @@ height = 40.0
 
 [node name="Player" parent="." instance=ExtResource( 1 )]
 transform = Transform( -0.0483094, 0, 0.998832, 0, 1, 0, -0.998832, 0, -0.0483094, -85.4159, 22.9515, -98.2473 )
+speedlable = NodePath("../CanvasLayer/Label")
+framelable = NodePath("../CanvasLayer/Label2")
 runAcceleration = 35.0
 runDeacceleration = 25.0
-airAcceleration = 350.0
-airDecceleration = 250.0
+airAcceleration = 10.0
 sideStrafeAcceleration = 125.0
 friction = 1.0
+airfriction = 0.0
 gravity = 10.0
-lockLikeCS = false
 
 [node name="CSGMesh" parent="Player" index="1"]
 material = ExtResource( 2 )
@@ -128,5 +130,45 @@ transform = Transform( 0.660657, 0, -0.750688, 0, 1, 0, 0.750688, 0, 0.660657, -
 polygon = PoolVector2Array( -72.5709, -1.63165, -6.22685, 17.855, 25.4734, 24.7575, 25.5543, -0.776146 )
 depth = 25.005
 material = ExtResource( 4 )
+
+[node name="Area" parent="CSGCombiner" instance=ExtResource( 5 )]
+transform = Transform( 0.759513, -0.209939, 0.615683, 0.0241388, 0.954932, 0.295841, -0.650044, -0.209833, 0.730351, -117.857, 2.50875, 58.1599 )
+useDirection = true
+
+[node name="Area2" parent="CSGCombiner" instance=ExtResource( 5 )]
+transform = Transform( -0.0785635, 0, -0.996909, 0, 1, 0, 0.996909, 0, -0.0785635, 257.717, 14.1166, -147.19 )
+useDirection = true
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Label" type="Label" parent="CanvasLayer"]
+anchor_top = 0.5
+anchor_right = 0.012
+anchor_bottom = 1.0
+margin_left = 11.8063
+margin_top = 149.427
+margin_right = 92.5183
+margin_bottom = -119.573
+rect_scale = Vector2( 2, 2 )
+align = 1
+valign = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label2" type="Label" parent="CanvasLayer"]
+anchor_top = 0.5
+anchor_right = 0.009
+anchor_bottom = 0.982
+margin_left = 8.80627
+margin_top = 227.427
+margin_right = 97.5903
+margin_bottom = -30.7728
+rect_scale = Vector2( 2, 2 )
+align = 1
+valign = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [editable path="Player"]
