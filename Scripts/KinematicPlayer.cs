@@ -29,9 +29,7 @@ public class KinematicPlayer : KinematicBody
 	[Export] public float airfriction = 5.25f;
 	[Export]public float gravity = 9.8f;
 	//MOUSE
-	float mouseSensitivity = 0.1f;
-	public float rotx = 0;
-	public float roty = 0;
+	public float playerRootH = 0;
 	//KEYBOARD
 	public Vector2 moveDir = Vector2.Zero;
 	//JUMP
@@ -50,19 +48,11 @@ public class KinematicPlayer : KinematicBody
 
 	public override void _Ready()
 	{
-		Input.SetMouseMode(Input.MouseMode.Captured);
 		slable = GetNode<Label>(speedlable);
 		flable = GetNode<Label>(framelable);
 	}
 	public override void _Input(InputEvent @event)
 	{
-		if (@event is InputEventMouseButton eventMouseButton)
-			GD.Print("Mouse Click/Unclick at: ", eventMouseButton.Position);
-		else if (@event is InputEventMouseMotion eventMouseMotion)
-		{
-			rotx = -eventMouseMotion.Relative.x / 180 * 3.1415f * mouseSensitivity;
-			roty= -eventMouseMotion.Relative.y / 180 * 3.1415f * mouseSensitivity;
-		}
 		if (@event is InputEventKey eventKey)
 		{
 
@@ -102,10 +92,9 @@ public class KinematicPlayer : KinematicBody
 		absPlayerVelocity.y = playerVelocity.z;
 
 		Transform t = Transform;
-		Quat newrot = new Quat(new Vector3(0, rotx, 0)) * t.basis.Quat();
+		Quat newrot = new Quat(new Vector3(0, playerRootH, 0));
 		t.basis = new Basis(newrot);
 		Transform = t;
-		rotx = 0;
 
 		if (holdJumpToBhop)
 		{

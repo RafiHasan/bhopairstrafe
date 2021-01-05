@@ -26,7 +26,6 @@ settings/fps/force_fps=60
 [display]
 
 window/size/resizable=false
-window/size/fullscreen=true
 
 [input]
 

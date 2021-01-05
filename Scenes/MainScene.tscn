@@ -12,6 +12,13 @@ height = 40.0
 
 [node name="MainScene" type="Spatial"]
 
+[node name="Camera" type="Camera" parent="."]
+transform = Transform( -0.0483094, -0.47674, 0.877716, 0, 0.878742, 0.477297, -0.998832, 0.0230579, -0.0424515, -79.2549, 25.9653, -98.5376 )
+fov = 88.4
+far = 773.4
+script = ExtResource( 3 )
+path = NodePath("../Player")
+
 [node name="Player" parent="." instance=ExtResource( 1 )]
 transform = Transform( -0.0483094, 0, 0.998832, 0, 1, 0, -0.998832, 0, -0.0483094, -85.4159, 22.9515, -98.2473 )
 speedlable = NodePath("../CanvasLayer/Label")
@@ -26,13 +33,6 @@ gravity = 10.0
 
 [node name="CSGMesh" parent="Player" index="1"]
 material = ExtResource( 2 )
-
-[node name="Camera" type="Camera" parent="Player"]
-transform = Transform( 1, 1.86265e-09, -7.45058e-09, 0, 0.878742, 0.477297, 7.45058e-09, -0.477297, 0.878743, -0.00764465, 3.01384, 6.16779 )
-fov = 88.4
-far = 773.4
-script = ExtResource( 3 )
-path = NodePath("..")
 
 [node name="DirectionalLight" type="DirectionalLight" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.54597, 0.837804, 0, -0.837804, 0.54597, 324.631, 38.0978, 0 )
