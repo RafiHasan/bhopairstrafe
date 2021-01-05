@@ -4,9 +4,17 @@ using System;
 public class KinematicPlayer : KinematicBody
 {
 
-	
+	[Export] NodePath speedlable;
+	[Export] NodePath framelable;
+
+	Label slable=null;
+	Label flable=null;
+
 	//MOVEMENT VARIABLES
-	[Export]public float moveSpeed = 10.0f;
+	public float moveSpeed = 10.0f;
+	[Export] public float defaultmoveSpeed = 10.0f;
+	public float forcedmoveSpeed = 10.0f;
+	public float forcedTime = 0.0f;
 	[Export]public float runAcceleration = 14.0f;
 	[Export]public float runDeacceleration = 10.0f;
 	[Export]public float airAcceleration = 14.0f;
@@ -32,15 +40,19 @@ public class KinematicPlayer : KinematicBody
 	bool wishJump = false;
 	//PLAYER MOVEMENT
 	public Vector3 playerVelocity = Vector3.Zero;
+	public Vector2 absPlayerVelocity = Vector2.Zero;
 	Vector3 playerJumpVelocity = Vector3.Zero;
 	Vector3 jumpForward = Vector3.Zero;
 	Vector3 jumpRight = Vector3.Zero;
 
 
+
+
 	public override void _Ready()
 	{
 		Input.SetMouseMode(Input.MouseMode.Captured);
-		
+		slable = GetNode<Label>(speedlable);
+		flable = GetNode<Label>(framelable);
 	}
 	public override void _Input(InputEvent @event)
 	{
@@ -75,6 +87,20 @@ public class KinematicPlayer : KinematicBody
 
 	public override void _Process(float delta)
 	{
+
+		slable.Text="Speed : "+ ((int)absPlayerVelocity.Length()).ToString();
+		flable.Text = "Frame : " + ((int)(1 / delta)).ToString();
+		if (forcedTime > 0)
+		{
+			moveSpeed = forcedmoveSpeed;
+			forcedTime -= delta;
+		}
+		else
+			moveSpeed = defaultmoveSpeed;
+
+		absPlayerVelocity.x = playerVelocity.x;
+		absPlayerVelocity.y = playerVelocity.z;
+
 		Transform t = Transform;
 		Quat newrot = new Quat(new Vector3(0, rotx, 0)) * t.basis.Quat();
 		t.basis = new Basis(newrot);
@@ -213,7 +239,7 @@ public class KinematicPlayer : KinematicBody
 			fric = 1.0f;
 		}
 		else
-        {
+		{
 			fric = 1.0f*(float)Math.Acos(a.Dot(b)) * 180 / 3.1415f/90;
 		}
 
@@ -328,6 +354,9 @@ public class KinematicPlayer : KinematicBody
 
 		float dot = a.x * -b.z + a.z * b.x;
 
+
+		Vector3 lastforward = jumpForward;
+
 		if (dot > 0 && moveDir.x != 0)
 		{
 			jumpForward = GlobalTransform.basis.z;
@@ -343,6 +372,24 @@ public class KinematicPlayer : KinematicBody
 			wish = Vector3.Zero;
 		}
 
+		if (lastforward == forward && absPlayerVelocity.Length()<2)
+		{
+			jumpForward = GlobalTransform.basis.z;
+			jumpRight = GlobalTransform.basis.x;
+			wish = GlobalTransform.basis.x*moveDir.x;
+		}
+
+
 		return wish;
 	}
+
+
+	public void ForceVelocity(Vector3 velocity,float movespeed,float duration)
+	{
+		playerVelocity.x = velocity.x;
+		playerVelocity.z = velocity.z;
+		forcedmoveSpeed = moveSpeed;
+		forcedTime = duration;
+	}
+
 }
