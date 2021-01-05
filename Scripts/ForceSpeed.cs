@@ -37,7 +37,7 @@ public class ForceSpeed : Area
 		}
 		else
 		{
-			magnetude = fixedofmultiplyvelocity;
+			magnetude = player.playerVelocity.Length()+ fixedofmultiplyvelocity;
 
 		}
 
